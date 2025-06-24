@@ -1,0 +1,39 @@
+services:
+  mysql:
+    image: mysql:8
+    container_name: joomla-mysql
+    ports:
+      - "3306:3306"  # Exposes MySQL for Workbench
+    environment:
+      MYSQL_ROOT_PASSWORD: my-secret-pw
+      MYSQL_DATABASE: joomla
+      MYSQL_USER: joomlauser
+      MYSQL_PASSWORD: joomlapass
+    volumes:
+      - joomla-mysql-data:/var/lib/mysql
+    networks:
+      - joomla-net
+
+  joomla:
+    image: joomla
+    container_name: joomla
+    ports:
+      - "8080:80"  # Web access to Joomla
+    environment:
+      JOOMLA_DB_HOST: joomla-mysql
+      JOOMLA_DB_USER: joomlauser
+      JOOMLA_DB_PASSWORD: joomlapass
+      JOOMLA_DB_NAME: joomla
+    volumes:
+      - joomla-html:/var/www/html
+    networks:
+      - joomla-net
+    depends_on:
+      - mysql
+
+volumes:
+  joomla-html:
+  joomla-mysql-data:
+
+networks:
+  joomla-net:
