@@ -95,16 +95,33 @@ If backup files aren't already in `backups/`, copy them there:
 
 ---
 
-### 4. ♻️ Run the Restore Script
+### 3. 🧱 Start the Containers (Required Before Restoring)
+
+Before running the restore, make sure the Docker containers and network are created by running:
 
 ```bash
-cd scripts
-./restore.sh
+./scripts/setup.sh
 ```
 
 This will:
 
-- Automatically detect the latest backup files in `../backups/`
+- Create the Docker network
+- Start Joomla and MySQL containers
+- Bind volumes for persistence
+
+---
+
+### 4. ♻️ Run the Restore Script
+
+After the containers are up and running, restore the site from backup:
+
+```bash
+./scripts/restore.sh
+```
+
+This will:
+
+- Automatically detect the latest backup files in `./backups/`
 - Restore the MySQL database
 - Restore Joomla files into the Docker volume
 - Restart the Joomla container
