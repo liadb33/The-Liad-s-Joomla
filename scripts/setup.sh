@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# Create Docker network (if it doesn't exist)
-docker network create joomla-network || echo "Network already exists"
+# === Step 1: Create Docker network (if not exists) ===
+docker network create joomla-network >/dev/null 2>&1 && echo "✅ Network created: joomla-network" || echo "ℹ️ Network already exists"
 
-echo "launching mysql container.."
-# Create MySQL 8 container
+# === Step 2: Launch MySQL Container ===
+echo "🚀 Launching MySQL container..."
 docker run -d \
   --name joomla-mysql \
   --network joomla-network \
@@ -16,8 +16,8 @@ docker run -d \
   -v joomla-mysql-data:/var/lib/mysql \
   mysql:8
 
-echo "launching joomla container.."
-# Create Joomla container
+# === Step 3: Launch Joomla Container ===
+echo "🚀 Launching Joomla container..."
 docker run -d \
   --name joomla \
   --network joomla-network \
@@ -27,7 +27,10 @@ docker run -d \
   -e JOOMLA_DB_PASSWORD=joomlapass \
   -e JOOMLA_DB_NAME=joomla \
   -v joomla-html:/var/www/html \
+  -v joomla-templates:/var/www/html/templates/cassiopeia \
+  -v joomla-media:/var/www/html/media/templates/site/cassiopeia \
+  -v joomla-images:/var/www/html/images \
   joomla
 
-
-echo "all containers started!"
+# === Final Message ===
+echo "✅ All containers started and volumes mounted successfully!"
