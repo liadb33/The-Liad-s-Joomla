@@ -9,16 +9,22 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 BACKUP_DIR="$PROJECT_ROOT/backups"
 
-# === Input files ===
-DB_BACKUP_FILE=$1
-HTML_BACKUP_FILE=$2
-TEMPLATES_BACKUP_FILE=$3
-MEDIA_BACKUP_FILE=$4
-IMAGES_BACKUP_FILE=$5
+# === Find latest backup files ===
+DB_BACKUP_FILE=$(ls -t "$BACKUP_DIR"/*joomla-backup_*.sql.gz 2>/dev/null | head -n 1)
+HTML_BACKUP_FILE=$(ls -t "$BACKUP_DIR"/joomla_html_*.tar.gz 2>/dev/null | head -n 1)
+TEMPLATES_BACKUP_FILE=$(ls -t "$BACKUP_DIR"/joomla_templates_*.tar.gz 2>/dev/null | head -n 1)
+MEDIA_BACKUP_FILE=$(ls -t "$BACKUP_DIR"/joomla_media_*.tar.gz 2>/dev/null | head -n 1)
+IMAGES_BACKUP_FILE=$(ls -t "$BACKUP_DIR"/joomla_images_*.tar.gz 2>/dev/null | head -n 1)
 
+# === Verify all files found ===
 if [ -z "$DB_BACKUP_FILE" ] || [ -z "$HTML_BACKUP_FILE" ] || [ -z "$TEMPLATES_BACKUP_FILE" ] || [ -z "$MEDIA_BACKUP_FILE" ] || [ -z "$IMAGES_BACKUP_FILE" ]; then
-  echo "❌ Usage: ./restore.sh <db-backup.sql.gz> <html.tar.gz> <templates.tar.gz> <media.tar.gz> <images.tar.gz>"
-  echo "Example: ./restore.sh ./backups/my-joomla-backup_2025-06-26_20-00.sql.gz ./backups/joomla_html_2025-06-26_20-00.tar.gz ./backups/joomla_templates_2025-06-26_20-00.tar.gz ./backups/joomla_media_2025-06-26_20-00.tar.gz ./backups/joomla_images_2025-06-26_20-00.tar.gz"
+  echo "❌ Could not find all required backup files in $BACKUP_DIR"
+  echo "Make sure the folder contains:"
+  echo "- my-joomla-backup_*.sql.gz"
+  echo "- joomla_html_*.tar.gz"
+  echo "- joomla_templates_*.tar.gz"
+  echo "- joomla_media_*.tar.gz"
+  echo "- joomla_images_*.tar.gz"
   exit 1
 fi
 
@@ -27,7 +33,7 @@ echo "🔧 Creating database if it doesn't exist..."
 docker exec "$MYSQL_CONTAINER" sh -c "exec mysqladmin -u$DB_USER -p$DB_PASS create $DB_NAME" 2>/dev/null
 
 # === Step 2: Restore database ===
-echo "📥 Restoring database..."
+echo "📥 Restoring database from: $(basename "$DB_BACKUP_FILE")"
 gunzip < "$DB_BACKUP_FILE" | docker exec -i "$MYSQL_CONTAINER" sh -c \
   "exec mysql -h 127.0.0.1 -u$DB_USER -p$DB_PASS --force $DB_NAME"
 
@@ -39,25 +45,25 @@ else
 fi
 
 # === Step 3: Restore Joomla volumes ===
-echo "📦 Restoring Joomla HTML volume..."
+echo "📦 Restoring Joomla HTML volume from: $(basename "$HTML_BACKUP_FILE")"
 docker run --rm \
   -v joomla-html:/to \
   -v "$BACKUP_DIR":/from \
   alpine sh -c "cd /to && tar xzf /from/$(basename "$HTML_BACKUP_FILE")"
 
-echo "📦 Restoring Joomla template volume..."
+echo "📦 Restoring Joomla template volume from: $(basename "$TEMPLATES_BACKUP_FILE")"
 docker run --rm \
   -v joomla-templates:/to \
   -v "$BACKUP_DIR":/from \
   alpine sh -c "cd /to && tar xzf /from/$(basename "$TEMPLATES_BACKUP_FILE")"
 
-echo "📦 Restoring Joomla media volume..."
+echo "📦 Restoring Joomla media volume from: $(basename "$MEDIA_BACKUP_FILE")"
 docker run --rm \
   -v joomla-media:/to \
   -v "$BACKUP_DIR":/from \
   alpine sh -c "cd /to && tar xzf /from/$(basename "$MEDIA_BACKUP_FILE")"
 
-echo "📦 Restoring Joomla images volume..."
+echo "📦 Restoring Joomla images volume from: $(basename "$IMAGES_BACKUP_FILE")"
 docker run --rm \
   -v joomla-images:/to \
   -v "$BACKUP_DIR":/from \
