@@ -2,6 +2,7 @@
 
 # === Configuration ===
 MYSQL_CONTAINER=joomla-mysql
+JOOMLA_CONTAINER=joomla
 DB_NAME=joomla
 DB_USER=root
 DB_PASS=my-secret-pw
@@ -28,11 +29,11 @@ if [ -z "$DB_BACKUP_FILE" ] || [ -z "$HTML_BACKUP_FILE" ] || [ -z "$TEMPLATES_BA
   exit 1
 fi
 
-# === Step 1: Create the DB (if needed) ===
+# === Step 1: Create DB (if needed) ===
 echo "🔧 Creating database if it doesn't exist..."
 docker exec "$MYSQL_CONTAINER" sh -c "exec mysqladmin -u$DB_USER -p$DB_PASS create $DB_NAME" 2>/dev/null
 
-# === Step 2: Restore database ===
+# === Step 2: Restore DB ===
 echo "📥 Restoring database from: $(basename "$DB_BACKUP_FILE")"
 gunzip < "$DB_BACKUP_FILE" | docker exec -i "$MYSQL_CONTAINER" sh -c \
   "exec mysql -h 127.0.0.1 -u$DB_USER -p$DB_PASS --force $DB_NAME"
@@ -44,29 +45,21 @@ else
   exit 1
 fi
 
-# === Step 3: Restore Joomla volumes ===
-echo "📦 Restoring Joomla HTML volume from: $(basename "$HTML_BACKUP_FILE")"
-docker run --rm \
-  -v joomla-html:/to \
-  -v "$BACKUP_DIR":/from \
-  alpine sh -c "cd /to && tar xzf /from/$(basename "$HTML_BACKUP_FILE")"
+# === Step 3: Restore Joomla files ===
 
-echo "📦 Restoring Joomla template volume from: $(basename "$TEMPLATES_BACKUP_FILE")"
-docker run --rm \
-  -v joomla-templates:/to \
-  -v "$BACKUP_DIR":/from \
-  alpine sh -c "cd /to && tar xzf /from/$(basename "$TEMPLATES_BACKUP_FILE")"
+restore_to_container() {
+  local tar_file=$1
+  local container_path=$2
+  local label=$3
 
-echo "📦 Restoring Joomla media volume from: $(basename "$MEDIA_BACKUP_FILE")"
-docker run --rm \
-  -v joomla-media:/to \
-  -v "$BACKUP_DIR":/from \
-  alpine sh -c "cd /to && tar xzf /from/$(basename "$MEDIA_BACKUP_FILE")"
+  echo "📦 Restoring $label from: $(basename "$tar_file")"
+  docker cp "$tar_file" "$JOOMLA_CONTAINER":/tmp/restore.tar.gz
+  docker exec "$JOOMLA_CONTAINER" sh -c "mkdir -p $container_path && tar xzf /tmp/restore.tar.gz -C $container_path && rm /tmp/restore.tar.gz"
+}
 
-echo "📦 Restoring Joomla images volume from: $(basename "$IMAGES_BACKUP_FILE")"
-docker run --rm \
-  -v joomla-images:/to \
-  -v "$BACKUP_DIR":/from \
-  alpine sh -c "cd /to && tar xzf /from/$(basename "$IMAGES_BACKUP_FILE")"
+restore_to_container "$HTML_BACKUP_FILE" "/var/www/html" "Joomla core"
+restore_to_container "$TEMPLATES_BACKUP_FILE" "/var/www/html/templates/cassiopeia" "templates"
+restore_to_container "$MEDIA_BACKUP_FILE" "/var/www/html/media" "media"
+restore_to_container "$IMAGES_BACKUP_FILE" "/var/www/html/images" "images"
 
 echo "🎉 Full restore completed successfully!"
