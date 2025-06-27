@@ -24,13 +24,31 @@ docker run -d \
   -p 8080:80 \
   -e JOOMLA_DB_HOST=joomla-mysql \
   -e JOOMLA_DB_USER=joomlauser \
-  -e JOOMLA_DB_PASSWORD=joomlapass \
+  -e JOOMLA_DB_PASSWORD=joomlauser \
   -e JOOMLA_DB_NAME=joomla \
   -v joomla-html:/var/www/html \
-  -v joomla-templates:/var/www/html/templates/cassiopeia \
-  -v joomla-media:/var/www/html/media/templates/site/cassiopeia \
-  -v joomla-images:/var/www/html/images \
   joomla
 
+# === Wait for containers to be ready ===
+echo "⏳ Waiting for containers to start..."
+sleep 10
+
+# === Check container status ===
+echo "📋 Container status:"
+if docker ps | grep -q "joomla-mysql"; then
+  echo "✅ MySQL container is running"
+else
+  echo "❌ MySQL container failed to start"
+  docker logs joomla-mysql
+fi
+
+if docker ps | grep -q "joomla"; then
+  echo "✅ Joomla container is running"
+else
+  echo "❌ Joomla container failed to start"
+  docker logs joomla
+fi
+
 # === Final Message ===
-echo "✅ All containers started and volumes mounted successfully!"
+echo ""
+echo "🎉 Setup completed!"

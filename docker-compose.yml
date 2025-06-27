@@ -3,7 +3,7 @@ services:
     image: mysql:8
     container_name: joomla-mysql
     ports:
-      - "3306:3306"  # Exposes MySQL for Workbench
+      - "3306:3306"
     environment:
       MYSQL_ROOT_PASSWORD: my-secret-pw
       MYSQL_DATABASE: joomla
@@ -18,12 +18,13 @@ services:
     image: joomla
     container_name: joomla
     ports:
-      - "8080:80"  # Web access to Joomla
+      - "8080:80"
     environment:
       JOOMLA_DB_HOST: joomla-mysql
       JOOMLA_DB_USER: joomlauser
       JOOMLA_DB_PASSWORD: joomlapass
       JOOMLA_DB_NAME: joomla
+      JOOMLA_DB_PREFIX: liads_      # ← Set your custom prefix here
     volumes:
       - joomla-html:/var/www/html
     networks:
