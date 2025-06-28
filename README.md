@@ -22,6 +22,7 @@ We were required to:
   - MySQL database
   - Joomla site files
 - Create users and content for each team member
+- Style the website using custom.css file
 - Write **automation scripts** in Bash
 - Document everything in a Git repository
 
