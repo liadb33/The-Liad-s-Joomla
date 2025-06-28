@@ -59,15 +59,60 @@ We were required to:
 
 ---
 
-## 🚀 Step-by-Step: How to Restore the Website
+## 🚀 Quick Start Options
+
+You can deploy this project in two ways:
+
+### Option 1: 🐳 Using Docker Compose (Recommended)
+
+This is the simplest way to get started:
+
+```bash
+# Clone the repository
+git clone https://github.com/liadb33/The-Liads-Joomla
+cd The-Liads-Joomla
+
+# Start the services
+docker-compose up -d
+
+# Check if containers are running
+docker-compose ps
+```
+
+To stop the services:
+```bash
+docker-compose down
+```
+
+To completely remove everything (containers, volumes, networks):
+```bash
+docker-compose down -v
+```
+
+### Option 2: 📜 Using Automation Scripts
+
+For more control and backup/restore functionality:
+
+```bash
+# Clone the repository
+git clone https://github.com/liadb33/The-Liads-Joomla
+cd The-Liads-Joomla
+
+# Start using the setup script
+./scripts/setup.sh
+```
+
+---
+
+## 🔄 Step-by-Step: How to Restore the Website
 
 > This guide shows exactly how to clone this project and restore the site (including Joomla configuration and articles).
 
 ### 1. 📥 Clone the Repository
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/YOUR_REPOSITORY_NAME.git
-cd YOUR_REPOSITORY_NAME
+git clone https://github.com/liadb33/The-Liads-Joomla
+cd The-Liads-Joomla
 ```
 
 ### 2. 📁 Verify Project Structure
@@ -95,10 +140,16 @@ If backup files aren't already in `backups/`, copy them there:
 
 ---
 
-### 3. 🧱 Start the Containers (Required Before Restoring)
+### 4. 🧱 Start the Containers (Required Before Restoring)
 
-Before running the restore, make sure the Docker containers and network are created by running:
+Choose one of the methods below:
 
+**Method A: Using Docker Compose**
+```bash
+docker-compose up -d
+```
+
+**Method B: Using Setup Script**
 ```bash
 ./scripts/setup.sh
 ```
@@ -111,7 +162,7 @@ This will:
 
 ---
 
-### 4. ♻️ Run the Restore Script
+### 5. ♻️ Run the Restore Script
 
 After the containers are up and running, restore the site from backup:
 
@@ -128,7 +179,7 @@ This will:
 
 ---
 
-### 5. 🌐 Access the Restored Joomla Site
+### 6. 🌐 Access the Restored Joomla Site
 
 - Website: [http://localhost:8080](http://localhost:8080)
 - Admin: [http://localhost:8080/administrator](http://localhost:8080/administrator)
@@ -154,19 +205,37 @@ Username: root
 Password: my-secret-pw
 ```
 
-4. Click **Test Connection** → should say “Connected”
+4. Click **Test Connection** → should say "Connected"
 5. Click **OK** to save
 6. Open the connection to explore the `joomla` database
 
-> ⚠️ Make sure the MySQL container is running (`docker ps`)
+> ⚠️ Make sure the MySQL container is running (`docker ps` or `docker-compose ps`)
 
 ---
 
-## 🧹 Optional: Clean and Rebuild
+## 🧹 Cleanup Options
 
-If you want to reset everything:
-
+### Using Docker Compose
 ```bash
+# Stop services
+docker-compose down
+
+# Stop and remove everything including volumes
+docker-compose down -v
+```
+
+### Using Scripts
+```bash
+./scripts/cleanup.sh
+```
+
+To rebuild everything:
+```bash
+# Docker Compose method
+docker-compose down -v
+docker-compose up -d
+
+# Script method
 ./scripts/cleanup.sh
 ./scripts/setup.sh
 ```
@@ -178,6 +247,7 @@ If you want to reset everything:
 - Tested on Ubuntu-based Linux with Docker CLI
 - Joomla official image used (~750MB)
 - MySQL official image used (~632MB)
+- Docker Compose v2.x recommended
 
 ---
 
@@ -191,7 +261,7 @@ joomla-project/
 │   ├── backup.sh
 │   ├── restore.sh
 │   └── cleanup.sh
-├── docker-compose.yml
+├── docker-compose.yml # Docker Compose configuration
 └── README.md
 ```
 
@@ -201,7 +271,7 @@ joomla-project/
 
 - Default MySQL root password is hardcoded for local testing only.
 - Restore script auto-detects the newest backup files if no arguments are provided.
+- Docker Compose method is recommended for quick testing and development.
+- Use the script-based approach when you need backup/restore functionality.
 
 ---
-
-> ✅ Done according to project instructions. Built with care and clarity for reproducibility.
