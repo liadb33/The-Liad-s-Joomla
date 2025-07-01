@@ -4,6 +4,14 @@ A full Joomla website deployment using Docker, with MySQL integration, backup/re
 
 ---
 
+<div style="text-align:center; margin: 1.5em 0;">
+  <img
+    src="https://github.com/user-attachments/assets/df687270-53e6-46a8-91be-051dcc395ada"
+    alt="Joomla Project Screenshot"
+    style="max-width:800px; width:100%; height:auto; border-radius:6px; box-shadow:0 4px 12px rgba(0,0,0,0.15);"
+  />
+</div>
+
 ## 👤 Who We Are
 
 > Developed by **Liad Barsheshet**, **Shlomi Haser**, and **Ben Noyman**  
